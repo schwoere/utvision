@@ -1,0 +1,83 @@
+# HOW TO BUILD (A) LIBRAR-Y/IES FROM A MODULE
+# Building libraries from modules should be consistent for each module.
+# Use the following scheme for each new library created:
+#
+# a) Check for required libraries. If they are not available return False and export flags if needed
+# b) Define the src-subdirectories for which the library should be compiled
+#    and glob all files in there
+# c) Define a [LIBRARY]_options variable for the library containing all dependencies
+#    from other libraries. Create a clone from the master environment and add those options.
+# d) WINDOWS ONLY: Create a header file which implements dll interface functionality
+#    dependent from a [LIBRARY]_DLL define. If the define is set, the dll should be exported,
+#    if not, the dll should be imported. Set the define in the preprocessor options for the environment.
+# e) Build the library!
+# f) Remove all entries for (at least) the LIBS and LIBPATH keys in the options and
+#    add only the newly-compiled library as a dependcy. This will avoid multiple includes
+#    of libraries. Also verify that the import/export-switch define is not set.
+# g) Export the options so that other libraries can base on this library. 
+# h) Optionally setup help and ide projects
+#
+# The use of options and possibility to export them makes hierarchical build environments
+# obsolete. Avoid exporting new environments to the build system.
+
+import sys
+import os.path
+import glob
+
+Import( '*' )
+
+# a)
+if not ( have_utcore and have_opencv):
+	print "utCore or OpenCV missing -- not building vision libraries"
+	have_utvision = False
+	utvision_options = {}
+	utvision_all_options = {}
+	Export( 'utvision_options', 'have_utvision', 'utvision_all_options' )
+	Return('have_utvision')
+
+# b)
+subdirs = ['..']
+headers = globSourceFiles( '*.h' )
+sources = globSourceFiles( '*.cpp' )
+for dir in subdirs:		
+	headers += globSourceFiles( dir + '/*.h' )
+	sources += globSourceFiles( dir + '/*.cpp' )
+
+# c)	
+utvision_options = mergeOptions( opencv_options, utcore_all_options )
+utvision_options['CPPPATH'] += [os.path.join (getCurrentPath(), '..') ]
+
+env = masterEnv.Clone()
+
+if have_lapack:
+	env.AppendUnique( **lapack_options )
+else:		
+	for src in [  os.path.join ('MarkerBundle.cpp') , os.path.join ('MarkerBundleFrontend.cpp')]:
+		sources.remove( src );
+
+env.AppendUnique( **utvision_options )
+
+# d)
+if sys.platform == 'win32':
+	env.Append( CPPDEFINES = 'UTVISION_DLL')
+
+# e)
+libs = setupLibraryBuild(env, sources, 'utVision', 'vision')
+
+# f)
+utvision_all_options = utvision_options.copy()
+utvision_options[ 'LIBS' ] = []
+utvision_options[ 'LIBPATH' ] = []	
+utvision_options[ 'LIBS' ] += libs
+utvision_options[ 'LIBPATH' ] += [ install_library_prefix ]
+utvision_all_options[ 'LIBS' ] += libs
+utvision_all_options[ 'LIBPATH' ] += [ install_library_prefix ]
+
+have_utvision = libs != 0
+
+# g)
+Export( 'utvision_options', 'have_utvision', 'utvision_all_options' )
+
+# h)
+generateHelp(utvision_options)
+createVisualStudioProject(env, sources, headers, 'utVision')
