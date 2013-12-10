@@ -24,6 +24,9 @@ import sys
 import os.path
 import glob
 
+have_utcore = False
+have_opencv = False
+
 Import( '*' )
 
 # a)

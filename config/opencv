@@ -12,9 +12,6 @@ Import( '*' )
 SConscript ( '#/config/libraryConfig.py' )
 Import('standardLibFinder', 'standardLibConfig')
 
-opts.Add( 'OPENCV_PATH', 'Path to the qhull sdk directory' )
-opts.Add( 'OPENCV_INCLUDE', 'Path to the qhull header files' )
-opts.Add( 'OPENCV_LIBS', 'Path to the qhull library files' )
 
 libName = "OPENCV"
 #[{additional compile settings}, {include files}, {language (C++)},{library to link against (optional)}, {source code (optional)}]
