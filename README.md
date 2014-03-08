@@ -2,15 +2,17 @@ utvision
 ========
 This is the utvision Ubitrack submodule.
 
+Description
+----------
+The utvision contains algorithms working on (mostly) camera images.
+
+
 Usage
 -----
 In order to use it, you have to clone the buildenvironment, change to the ubitrack directory and add the utvision by executing:
 
     git submodule add https://github.com/schwoere/utvision.git modules/utvision
 
-Description
-----------
-The utvision contains algorithms working on (mostly) camera images.
 
 Dependencies
 ----------
